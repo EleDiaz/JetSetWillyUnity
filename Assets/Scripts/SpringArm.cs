@@ -1,117 +1,152 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class SpringArm : MonoBehaviour
 {
-    public GameObject HeadBone;
-    public Camera playerCamera;
-    /** Set up an object to get their boundaries as camara constraints */
-    public GameObject bounder;
-    private PlayerInput playerInput;
+    /// <summary>
+    /// Object to be used to attach the camera at some <paramref name="distance"/> at <paramref name="headBone"/> height
+    /// </summary>
+    public GameObject headBone;
 
+    /// <summary>
+    /// Camera to to attach to the player with the spring arm behavior
+    /// </summary>
+    public Camera playerCamera;
+
+    /// <summary>
+    /// Set up an object to get their boundaries as camara constraints
+    /// </summary>
+    public GameObject bounder;
+
+    /// <summary>
+    /// Zoom speed to camera
+    /// </summary>
     public float zoomSpeed = 0.5f;
+
     public float minDistance = 1.0f;
+
     public float maxDistance = 10.0f;
 
+    /// <summary>
+    /// Constraint the camera view to avoid reverse the camera by going down wards or up wards
+    /// </summary>
     public float pitchLimitsDegrees = 40;
 
-    /** Distance defined by user input (We aim to get this)*/
+    /// <summary>
+    /// Distance defined by user input (We aim to get this)
+    /// </summary>
     public float distance = 3.0f;
-    /** Distance limited by other constraints besides max and min*/
-    private float _currentDistance = 3.0f;
-    private Quaternion _initialRotation = Quaternion.identity; 
-    private Quaternion _currentRotation = Quaternion.identity; 
-    private Quaternion _yawRotation = Quaternion.identity;
-    private Quaternion _pitchRotation = Quaternion.identity;
+    /// <summary>
+    /// Space around the camera to avoid clipping object with camera lens
+    /// </summary>
+    public float cameraDeltaSpace = 0.4f;
+
+    /// <summary>
+    /// Yaw rotation an easy way to extract it from the camera
+    /// </summary>
+    public Quaternion yawRotation = Quaternion.identity;
+    /// <summary>
+    /// Pitch rotation an easy way to extract it from the camera
+    /// </summary>
+    public Quaternion pitchRotation = Quaternion.identity;
+    /// <summary>
+    /// Yaw Rotation sensibility
+    /// </summary>
     public float rotationSpeedX = 0.01f;
+    /// <summary>
+    /// Pitch Rotation sensibility
+    /// </summary>
     public float rotationSpeedY = 0.01f;
 
-    /** Seconds to automatically reposition the camera, if there aren't any movement in that time 
-        it could take at least 2 times the value entered */
-        /// PUFFF WRONG que se mueva el caracter no la camara
-    public float cameraRepositionSeconds = 4.0f;
+    private Quaternion _initialRotation = Quaternion.identity;
+    private Quaternion _currentRotation = Quaternion.identity;
+    private PlayerInput _playerInput;
     private Bounds _bounds;
     /** Height defined by model mesh head position */
     private float _cameraHeight;
-    private float _cameraDeltaSpace = 0.4f;
 
-    private IEnumerator repositionCameraCourutine;
-    
-    void Awake() {
-        playerInput = GetComponent<PlayerInput>();
-        repositionCameraCourutine = RepositionCamera();
+    void Awake()
+    {
+        _playerInput = GetComponent<PlayerInput>();
     }
 
-    void OnEnable() {
-        playerInput.onZoom += OnZoom;
-        playerInput.onLookAround += OnLookAround;
-        StartCoroutine(repositionCameraCourutine);
-    }
-    
-    void OnDisable() {
-        playerInput.onZoom -= OnZoom;
-        playerInput.onLookAround -= OnLookAround;
-        StopCoroutine(repositionCameraCourutine);
+    void OnEnable()
+    {
+        _playerInput.onZoom += OnZoom;
+        _playerInput.onLookAround += OnLookAround;
     }
 
-    void OnZoom(float delta) => distance = Mathf.Clamp(zoomSpeed * delta + distance, minDistance, maxDistance);
+    void OnDisable()
+    {
+        _playerInput.onZoom -= OnZoom;
+        _playerInput.onLookAround -= OnLookAround;
+    }
+
+    void OnZoom(float delta)
+    {
+        distance = Mathf.Clamp(zoomSpeed * delta + distance, minDistance, maxDistance);
+    }
 
     void OnLookAround(Vector2 delta2)
     {
-        Quaternion yawOffset = _yawRotation * Quaternion.AngleAxis(rotationSpeedX * delta2.x, Vector3.up);
-        Quaternion pitchOffset = _pitchRotation * Quaternion.AngleAxis(-rotationSpeedY * delta2.y, Vector3.right);
-        
-        if (Quaternion.Angle(pitchOffset, Quaternion.LookRotation(Vector3.down)) < pitchLimitsDegrees || Quaternion.Angle(pitchOffset, Quaternion.LookRotation(-Vector3.down)) < pitchLimitsDegrees) {
-            _yawRotation = yawOffset;
+        Quaternion yawOffset = yawRotation * Quaternion.AngleAxis(rotationSpeedX * delta2.x, Vector3.up);
+        Quaternion pitchOffset = pitchRotation * Quaternion.AngleAxis(-rotationSpeedY * delta2.y, Vector3.right);
+
+        if (Quaternion.Angle(pitchOffset, Quaternion.LookRotation(Vector3.down)) < pitchLimitsDegrees ||
+            Quaternion.Angle(pitchOffset, Quaternion.LookRotation(-Vector3.down)) < pitchLimitsDegrees)
+        {
+            yawRotation = yawOffset;
         }
-        else {
-            _pitchRotation = pitchOffset;
-            _yawRotation = yawOffset;
+        else
+        {
+            pitchRotation = pitchOffset;
+            yawRotation = yawOffset;
         }
-        _currentRotation = _yawRotation * _initialRotation * _pitchRotation;
+
+        _currentRotation = yawRotation * _initialRotation * pitchRotation;
     }
 
     void Start()
     {
-        if (HeadBone != null) {
-            _cameraHeight = HeadBone.transform.position.y;
+        if (headBone != null)
+        {
+            _cameraHeight = headBone.transform.position.y;
         }
 
         _initialRotation = transform.rotation;
         // Position the camera behind the player by X distance
-        playerCamera.transform.position = 
-            transform.position + 
-            -Vector3.down * _cameraHeight + 
-            _currentRotation * (-Vector3.forward * _currentDistance);
+        playerCamera.transform.position =
+            transform.position +
+            -Vector3.down * _cameraHeight +
+            _currentRotation * (-Vector3.forward * distance);
 
-        if (bounder != null) {
+        if (bounder != null)
+        {
             CalculateBounds();
             ConstraintToBounds();
         }
     }
-    
-    private IEnumerator RepositionCamera() {
-        // TODO call 
-        yield return new WaitForSeconds(cameraRepositionSeconds);
-        RepositionCamera();
-    }
 
     void LateUpdate()
     {
-        playerCamera.transform.rotation = _currentRotation;   
+        playerCamera.transform.rotation = _currentRotation;
         playerCamera.transform.position =
-            transform.position + 
+            transform.position +
             -Vector3.down * _cameraHeight +
-            _currentRotation * (-Vector3.forward * _currentDistance);
+            _currentRotation * (-Vector3.forward * distance);
 
-        if (bounder != null) {
+        if (bounder != null)
+        {
             ConstraintToBounds();
         }
+
         // TODO: Add Raycast to avoid collide with objects in the scene
     }
 
-    void CalculateBounds() {
+    void CalculateBounds()
+    {
         _bounds = new Bounds();
         foreach (Renderer renderer in bounder.GetComponentsInChildren<Renderer>())
         {
@@ -120,13 +155,15 @@ public class SpringArm : MonoBehaviour
         }
     }
 
-    void ConstraintToBounds() {
-        Vector3 deltaSpace = new Vector3(_cameraDeltaSpace, _cameraDeltaSpace, _cameraDeltaSpace);
+    void ConstraintToBounds()
+    {
+        Vector3 deltaSpace = new Vector3(cameraDeltaSpace, cameraDeltaSpace, cameraDeltaSpace);
         Vector3 newPosition =
             Vector3.Min(_bounds.max - deltaSpace,
-            Vector3.Max(_bounds.min + deltaSpace, playerCamera.transform.position));
+                Vector3.Max(_bounds.min + deltaSpace, playerCamera.transform.position));
 
         playerCamera.transform.position = newPosition;
+        // We Should calculate the right position
         // Mathf.Atan(someangle)  *  adj
         // Vector3 adj = newPosition - playerCamera.transform.position
     }

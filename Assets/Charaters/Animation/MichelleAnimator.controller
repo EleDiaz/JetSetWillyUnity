@@ -308,7 +308,7 @@ BlendTree:
   - serializedVersion: 2
     m_Motion: {fileID: 8613502787546869000, guid: 5f1bf427ee33e4e408b646a0f2048ed8,
       type: 3}
-    m_Threshold: 0.107142866
+    m_Threshold: 0.09375001
     m_Position: {x: -1, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
@@ -317,7 +317,7 @@ BlendTree:
   - serializedVersion: 2
     m_Motion: {fileID: 8785451024055890424, guid: 85683005239383846a275ed5751062f8,
       type: 3}
-    m_Threshold: 0.21428573
+    m_Threshold: 0.18750001
     m_Position: {x: 0, y: -1}
     m_TimeScale: 1
     m_CycleOffset: 0.5
@@ -326,7 +326,7 @@ BlendTree:
   - serializedVersion: 2
     m_Motion: {fileID: 8785451024055890424, guid: 85683005239383846a275ed5751062f8,
       type: 3}
-    m_Threshold: 0.32142857
+    m_Threshold: 0.28125
     m_Position: {x: 0, y: 1}
     m_TimeScale: 1
     m_CycleOffset: 0
@@ -335,7 +335,7 @@ BlendTree:
   - serializedVersion: 2
     m_Motion: {fileID: -203655887218126122, guid: 626844e55b4cdc34198a19178f7c03ee,
       type: 3}
-    m_Threshold: 0.42857146
+    m_Threshold: 0.37500003
     m_Position: {x: 2, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
@@ -344,7 +344,7 @@ BlendTree:
   - serializedVersion: 2
     m_Motion: {fileID: -203655887218126122, guid: 471ea77f995926b42913b936bd62b311,
       type: 3}
-    m_Threshold: 0.53571427
+    m_Threshold: 0.46875
     m_Position: {x: -2, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
@@ -353,7 +353,7 @@ BlendTree:
   - serializedVersion: 2
     m_Motion: {fileID: -203655887218126122, guid: 626844e55b4cdc34198a19178f7c03ee,
       type: 3}
-    m_Threshold: 0.64285713
+    m_Threshold: 0.5625
     m_Position: {x: 0, y: 2}
     m_TimeScale: 1
     m_CycleOffset: 0
@@ -362,7 +362,7 @@ BlendTree:
   - serializedVersion: 2
     m_Motion: {fileID: -203655887218126122, guid: 626844e55b4cdc34198a19178f7c03ee,
       type: 3}
-    m_Threshold: 0.75
+    m_Threshold: 0.65625
     m_Position: {x: 0, y: -2}
     m_TimeScale: 1
     m_CycleOffset: 0
@@ -371,7 +371,7 @@ BlendTree:
   m_BlendParameter: Running
   m_BlendParameterY: Direction
   m_MinThreshold: 0
-  m_MaxThreshold: 0.75
+  m_MaxThreshold: 0.65625
   m_UseAutomaticThresholds: 1
   m_NormalizedBlendValues: 0
   m_BlendType: 3

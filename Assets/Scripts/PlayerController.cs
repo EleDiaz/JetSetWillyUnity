@@ -1,44 +1,87 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Controls the player movements, and trigger the animations
+/// </summary>
+[RequireComponent(typeof(PlayerInput))]
+[RequireComponent(typeof(Animator))]
+[RequireComponent(typeof(SpringArm))]
+[RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
 {
+    /// <summary>
+    /// Max walk speed
+    /// </summary>
+    public float maxWalkSpeed = 1.0f;
 
-    public float walkSpeed = 1.0f;
-    public float runSpeed = 2.0f; 
-    /** How much faster are we going between walkSpeed and runSpeed */
-    private float runningSpeedPercent = 0.0f;
+    /// <summary>
+    /// Max run speed
+    /// </summary>
+    public float maxRunSpeed = 2.0f;
+
+    /// <summary>
+    /// Acceleration to reach a speed, it is used on the blend animations
+    /// </summary>
+    public float acceleration = 0.5f;
+
+    /// <summary>
+    /// 
+    /// </summary>
     public float rotationSpeed = 1.0f;
 
-    public bool isJumping = false;
-    public bool isFalling = false;
+    /// <summary>
+    /// Air control on jumps or falling, higher values let give you more control.
+    /// </summary>
+    [Range(0.0f, 1.0f)] public float airControl = 0.3f;
 
-    public float updateRotationFromCamera = 4.0f;
+    /// <summary>
+    /// Time to update the camera after some activity on the camera angle
+    /// </summary>
+    public float timeToResetCamera = 4.0f;
 
-    private Vector2 movementDirection = Vector2.zero;
-
-    private PlayerInput playerInput;
-    private Animator animator;
     public Camera playerCamera;
 
-    void Awake() {
-        playerInput = GetComponent<PlayerInput>();
-        animator = GetComponent<Animator>();
+    private bool _isJumping = false;
+    private bool _isFalling = false;
+    private bool _isSprinting = false;
+    private Vector2 _lerpMovementDirection = Vector2.zero;
+    private Vector2 _movementDirection = Vector2.zero;
+    private Vector2 _movementDirectionBeforeJump = Vector2.zero;
+    private CharacterController _characterController;
+    private PlayerInput _playerInput;
+    private Animator _animator;
+    private SpringArm _springArm;
+    private float _lastCameraCheckTime = 0.0f;
+
+    private double TOLERANCE = 0.1;
+
+    void Awake()
+    {
+        _characterController = GetComponent<CharacterController>();
+        _playerInput = GetComponent<PlayerInput>();
+        _animator = GetComponent<Animator>();
+        _springArm = GetComponent<SpringArm>();
     }
 
-    void OnEnable() {
+    void OnEnable()
+    {
         Cursor.lockState = CursorLockMode.Locked;
-        playerInput.onMove += OnMove;
-        playerInput.onJump += OnJump;
-        playerInput.onMenu += OnMenu;
+        _playerInput.onMove += OnMove;
+        _playerInput.onJump += OnJump;
+        _playerInput.onMenu += OnMenu;
+        _playerInput.onSprint += OnSprint;
     }
 
-    void OnDisable() {
+    void OnDisable()
+    {
         Cursor.lockState = CursorLockMode.None;
-        playerInput.onMove -= OnMove;
-        playerInput.onJump -= OnJump;
-        playerInput.onMenu -= OnMenu;
+        _playerInput.onMove -= OnMove;
+        _playerInput.onJump -= OnJump;
+        _playerInput.onMenu -= OnMenu;
+        _playerInput.onSprint -= OnSprint;
     }
 
     void Start()
@@ -47,68 +90,115 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if (!isJumping && !isFalling) {
-            transform.position += transform.rotation *
-                new Vector3(movementDirection.x, 0.0f, movementDirection.y) * Mathf.Lerp(walkSpeed, runSpeed, runningSpeedPercent) * Time.deltaTime;
-
-            // Quaternion newRot = playerCamera.transform.rotation;
-            // newRot.x = 0;
-            // newRot.z = 0;
-            // transform.rotation = newRot.normalized;
+        _lerpMovementDirection = Vector2.Lerp(_lerpMovementDirection, _isSprinting? _movementDirection * 2: _movementDirection , acceleration * Time.deltaTime);
+        if (!_isJumping && !_isFalling)
+        {
+            Move(_lerpMovementDirection);
         }
-        else if (true /* TODO: Has Grounded */){
-            // TODO: calculate velocity to go forwards
-            if (isFalling) {
-                isFalling = false;
-                animator.SetBool("IsFalling", isFalling);
+        else if (_isJumping || _isFalling)
+        {
+            Move((_movementDirection * airControl + _movementDirectionBeforeJump).normalized);
+        }
+        UpdateAnimationMove();
+
+        if (_characterController.isGrounded)
+        {
+            if (_isFalling)
+            {
+                _isFalling = false;
+                _animator.SetBool("IsFalling", _isFalling);
             }
-            else {
-                isJumping = false;
-                animator.SetBool("IsJumping", isJumping);
+            else
+            {
+                _isJumping = false;
+                _animator.SetBool("IsJumping", _isJumping);
             }
         }
     }
 
-    void UpdateHeadingPosition(Quaternion newRotation) {
+    /// <summary>
+    /// Move the charater in a direction. Use the <paramref name="movementDirection"/> to get the speed and direction.
+    /// </summary>
+    /// <param name="movementDirection"></param>
+    void Move(Vector2 movementDirection)
+    {
+        var moveDirection = transform.rotation * new Vector3(movementDirection.x, 0.0f, movementDirection.y);
+        if (_isSprinting)
+        {
+            _characterController.Move(Mathf.Lerp(0, maxRunSpeed, movementDirection.magnitude) *
+                                      Time.deltaTime * moveDirection);
+        }
+        else
+        {
+            _characterController.Move(Mathf.Lerp(0, maxWalkSpeed, movementDirection.magnitude) * Time.deltaTime *
+                                      moveDirection);
+        }
+
+        if (Math.Abs(moveDirection.magnitude) > TOLERANCE || Time.time - _lastCameraCheckTime > timeToResetCamera)
+        {
+            // We could also create our yaw rotation from camera quaternion.
+            transform.rotation = Quaternion.Lerp(transform.rotation.normalized, _springArm.yawRotation, rotationSpeed * Time.deltaTime);
+
+            if (Math.Abs(Quaternion.Angle(transform.rotation, _springArm.yawRotation)) < TOLERANCE)
+            {
+                _lastCameraCheckTime = Time.time;
+            }
+        }
+    }
+
+    void UpdateHeadingPosition(Quaternion newRotation)
+    {
         // TODO: Update character rotation
     }
 
-    void UpdateHead() {
-
+    void UpdateHead()
+    {
     }
 
+    void UpdateAnimationMove()
+    {
+        if (Math.Abs(_lerpMovementDirection.magnitude) < TOLERANCE)
+        {
+            _animator.SetBool("IsIdle", true);
+        }
+        else
+        {
+            _animator.SetFloat("Running", _lerpMovementDirection.y);
+            _animator.SetFloat("Direction", _lerpMovementDirection.x);
+            _animator.SetBool("IsIdle", false);
+        }
+    }
+
+    /// <summary>
+    /// Set the walking speed of character
+    /// </summary>
+    /// <param name="vector2"> A 2 Axis input in rage of -1 to 1. It needs a normalized input vector</param>
     void OnMove(Vector2 vector2)
     {
-        // TODO: Shift + W get max speed 1.0f
-        //       W get walk speed 0.5f
-        // We shift the value to get 0-1 running speed to be used in lerp later
-        // Quaternion newRot = playerCamera.transform.rotation;
-        // newRot.x = 0;
-        // newRot.z = 0;
-        // transform.rotation = newRot.normalized;
-        if (vector2.magnitude == 0) {
-            animator.SetBool("IsIdle", true);
-        }
-        else {
-            animator.SetFloat("Running", vector2.y);
-            animator.SetFloat("Direction", vector2.x);
-            animator.SetBool("IsIdle", false);
-        }
+        _movementDirection = vector2;
+        UpdateAnimationMove();
+    }
 
-        // runningSpeedPercent = 2 * vector2.magnitude - 1.0f; 
-        // if (vector2.x != 0.0f && vector2.y == 0.0f && runningSpeedPercent <= 1.0f) {
-        //     animator.SetFloat("Turning", vector2.x);
-        // }
-        movementDirection = vector2; 
+    void OnSprint(bool sprinting)
+    {
+        _isSprinting = sprinting;
+        UpdateAnimationMove();
     }
 
     void OnJump()
     {
-        isJumping = true;
-        animator.SetBool("IsJumping", isJumping);
+        _isJumping = true;
+        _movementDirectionBeforeJump = _movementDirection;
+        var rb = _characterController.GetComponent<Rigidbody>();
+        rb.AddForce(Vector3.up * 50);
+            
+        _animator.SetBool("IsJumping", _isJumping);
     }
 
-    void OnMenu() {
+    void OnMenu()
+    {
+        // Pause the game
+        Time.timeScale = 0;
         // TODO: Open the pause menu stop all components in the scene
         Cursor.lockState = CursorLockMode.None;
     }

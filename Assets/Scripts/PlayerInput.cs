@@ -12,6 +12,9 @@ public class PlayerInput : MonoBehaviour
     public delegate void OnJump();
     public event OnJump onJump;
 
+    public delegate void OnSprint(bool sprinting);
+    public event OnSprint onSprint;
+    
     public delegate void OnMenu();
     public event OnMenu onMenu;
 
@@ -33,6 +36,7 @@ public class PlayerInput : MonoBehaviour
 
     void Move(InputAction.CallbackContext ctx) => onMove(ctx.ReadValue<Vector2>());
     void Jump(InputAction.CallbackContext _ctx) => onJump();
+    void Sprint(InputAction.CallbackContext ctx) => onSprint(ctx.performed);
     void Menu(InputAction.CallbackContext _ctx) => onMenu();
     void LookAround(InputAction.CallbackContext ctx) => onLookAround(ctx.ReadValue<Vector2>());
     void Zoom(InputAction.CallbackContext ctx) => onZoom(ctx.ReadValue<float>());
@@ -42,6 +46,8 @@ public class PlayerInput : MonoBehaviour
         _input.InGame.Move.performed += Move;
         _input.InGame.Move.canceled += Move;
         _input.InGame.Jump.performed += Jump;
+        _input.InGame.Sprint.performed += Sprint;
+        _input.InGame.Sprint.canceled += Sprint;
         _input.InGame.Menu.performed += Menu;
         _input.InGame.LookAround.performed += LookAround;
         _input.InGame.Zoom.performed += Zoom;
@@ -51,6 +57,8 @@ public class PlayerInput : MonoBehaviour
         _input.InGame.Move.performed -= Move;
         _input.InGame.Move.canceled -= Move;
         _input.InGame.Jump.performed -= Jump;
+        _input.InGame.Sprint.performed -= Sprint;
+        _input.InGame.Sprint.canceled -= Sprint;
         _input.InGame.Menu.performed -= Menu;
         _input.InGame.LookAround.performed -= LookAround;
         _input.InGame.Zoom.performed -= Zoom;

@@ -54,7 +54,15 @@ public class @Inputs : IInputActionCollection, IDisposable
                     ""name"": ""Zoom"",
                     ""type"": ""Value"",
                     ""id"": ""b0af0182-b44f-423c-a05b-0a79db55dc4b"",
-                    ""expectedControlType"": ""Double"",
+                    ""expectedControlType"": ""Axis"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                },
+                {
+                    ""name"": ""Sprint"",
+                    ""type"": ""Button"",
+                    ""id"": ""3ad393d0-5e18-49fc-aaad-1493ec478030"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """"
                 }
@@ -283,11 +291,22 @@ public class @Inputs : IInputActionCollection, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""90c27d2b-c624-4cc1-afe2-747eba66d207"",
-                    ""path"": ""<Mouse>/scroll"",
+                    ""path"": ""<Mouse>/scroll/y"",
                     ""interactions"": """",
-                    ""processors"": """",
+                    ""processors"": ""Scale(factor=0.01)"",
                     ""groups"": ""KeyboardBasic"",
                     ""action"": ""Zoom"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""727a37cf-e428-4105-9d62-1128d2cfc0b2"",
+                    ""path"": ""<Keyboard>/leftShift"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Sprint"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -309,6 +328,7 @@ public class @Inputs : IInputActionCollection, IDisposable
         m_InGame_Menu = m_InGame.FindAction("Menu", throwIfNotFound: true);
         m_InGame_LookAround = m_InGame.FindAction("LookAround", throwIfNotFound: true);
         m_InGame_Zoom = m_InGame.FindAction("Zoom", throwIfNotFound: true);
+        m_InGame_Sprint = m_InGame.FindAction("Sprint", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -363,6 +383,7 @@ public class @Inputs : IInputActionCollection, IDisposable
     private readonly InputAction m_InGame_Menu;
     private readonly InputAction m_InGame_LookAround;
     private readonly InputAction m_InGame_Zoom;
+    private readonly InputAction m_InGame_Sprint;
     public struct InGameActions
     {
         private @Inputs m_Wrapper;
@@ -372,6 +393,7 @@ public class @Inputs : IInputActionCollection, IDisposable
         public InputAction @Menu => m_Wrapper.m_InGame_Menu;
         public InputAction @LookAround => m_Wrapper.m_InGame_LookAround;
         public InputAction @Zoom => m_Wrapper.m_InGame_Zoom;
+        public InputAction @Sprint => m_Wrapper.m_InGame_Sprint;
         public InputActionMap Get() { return m_Wrapper.m_InGame; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -396,6 +418,9 @@ public class @Inputs : IInputActionCollection, IDisposable
                 @Zoom.started -= m_Wrapper.m_InGameActionsCallbackInterface.OnZoom;
                 @Zoom.performed -= m_Wrapper.m_InGameActionsCallbackInterface.OnZoom;
                 @Zoom.canceled -= m_Wrapper.m_InGameActionsCallbackInterface.OnZoom;
+                @Sprint.started -= m_Wrapper.m_InGameActionsCallbackInterface.OnSprint;
+                @Sprint.performed -= m_Wrapper.m_InGameActionsCallbackInterface.OnSprint;
+                @Sprint.canceled -= m_Wrapper.m_InGameActionsCallbackInterface.OnSprint;
             }
             m_Wrapper.m_InGameActionsCallbackInterface = instance;
             if (instance != null)
@@ -415,6 +440,9 @@ public class @Inputs : IInputActionCollection, IDisposable
                 @Zoom.started += instance.OnZoom;
                 @Zoom.performed += instance.OnZoom;
                 @Zoom.canceled += instance.OnZoom;
+                @Sprint.started += instance.OnSprint;
+                @Sprint.performed += instance.OnSprint;
+                @Sprint.canceled += instance.OnSprint;
             }
         }
     }
@@ -435,5 +463,6 @@ public class @Inputs : IInputActionCollection, IDisposable
         void OnMenu(InputAction.CallbackContext context);
         void OnLookAround(InputAction.CallbackContext context);
         void OnZoom(InputAction.CallbackContext context);
+        void OnSprint(InputAction.CallbackContext context);
     }
 }

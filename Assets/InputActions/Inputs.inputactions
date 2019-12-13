@@ -41,7 +41,15 @@
                     "name": "Zoom",
                     "type": "Value",
                     "id": "b0af0182-b44f-423c-a05b-0a79db55dc4b",
-                    "expectedControlType": "Double",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Sprint",
+                    "type": "Button",
+                    "id": "3ad393d0-5e18-49fc-aaad-1493ec478030",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": ""
                 }
@@ -270,11 +278,22 @@
                 {
                     "name": "",
                     "id": "90c27d2b-c624-4cc1-afe2-747eba66d207",
-                    "path": "<Mouse>/scroll",
+                    "path": "<Mouse>/scroll/y",
                     "interactions": "",
-                    "processors": "",
+                    "processors": "Scale(factor=0.01)",
                     "groups": "KeyboardBasic",
                     "action": "Zoom",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "727a37cf-e428-4105-9d62-1128d2cfc0b2",
+                    "path": "<Keyboard>/leftShift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Sprint",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
