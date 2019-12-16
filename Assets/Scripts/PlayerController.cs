@@ -9,7 +9,7 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerInput))]
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(SpringArm))]
-[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour
 {
     /// <summary>
@@ -50,17 +50,18 @@ public class PlayerController : MonoBehaviour
     private Vector2 _lerpMovementDirection = Vector2.zero;
     private Vector2 _movementDirection = Vector2.zero;
     private Vector2 _movementDirectionBeforeJump = Vector2.zero;
-    private CharacterController _characterController;
+    private Rigidbody _rigidbody;
     private PlayerInput _playerInput;
     private Animator _animator;
     private SpringArm _springArm;
     private float _lastCameraCheckTime = 0.0f;
 
     private double TOLERANCE = 0.1;
+    public int jumpForce = 300;
 
     void Awake()
     {
-        _characterController = GetComponent<CharacterController>();
+        _rigidbody = GetComponent<Rigidbody>();
         _playerInput = GetComponent<PlayerInput>();
         _animator = GetComponent<Animator>();
         _springArm = GetComponent<SpringArm>();
@@ -101,19 +102,26 @@ public class PlayerController : MonoBehaviour
         }
         UpdateAnimationMove();
 
-        if (_characterController.isGrounded)
+        if (CheckGrounded())
         {
             if (_isFalling)
             {
                 _isFalling = false;
                 _animator.SetBool("IsFalling", _isFalling);
-            }
-            else
-            {
                 _isJumping = false;
                 _animator.SetBool("IsJumping", _isJumping);
             }
         }
+        else
+        {
+            _isFalling = true;
+            _animator.SetBool("IsFalling", _isFalling);
+        }
+    }
+
+    bool CheckGrounded()
+    {
+        return Physics.Raycast(transform.position, Vector3.down, 0.1f);
     }
 
     /// <summary>
@@ -125,18 +133,19 @@ public class PlayerController : MonoBehaviour
         var moveDirection = transform.rotation * new Vector3(movementDirection.x, 0.0f, movementDirection.y);
         if (_isSprinting)
         {
-            _characterController.Move(Mathf.Lerp(0, maxRunSpeed, movementDirection.magnitude) *
+            _rigidbody.MovePosition(transform.position + Mathf.Lerp(0, maxRunSpeed, movementDirection.magnitude) *
                                       Time.deltaTime * moveDirection);
         }
         else
         {
-            _characterController.Move(Mathf.Lerp(0, maxWalkSpeed, movementDirection.magnitude) * Time.deltaTime *
+            _rigidbody.MovePosition(transform.position + Mathf.Lerp(0, maxWalkSpeed, movementDirection.magnitude) * Time.deltaTime *
                                       moveDirection);
         }
 
         if (Math.Abs(moveDirection.magnitude) > TOLERANCE || Time.time - _lastCameraCheckTime > timeToResetCamera)
         {
             // We could also create our yaw rotation from camera quaternion.
+            //_rigidbody.MoveRotation(Quaternion.Lerp(transform.rotation.normalized, _springArm.yawRotation, rotationSpeed * Time.deltaTime));
             transform.rotation = Quaternion.Lerp(transform.rotation.normalized, _springArm.yawRotation, rotationSpeed * Time.deltaTime);
 
             if (Math.Abs(Quaternion.Angle(transform.rotation, _springArm.yawRotation)) < TOLERANCE)
@@ -187,18 +196,19 @@ public class PlayerController : MonoBehaviour
 
     void OnJump()
     {
-        _isJumping = true;
-        _movementDirectionBeforeJump = _movementDirection;
-        var rb = _characterController.GetComponent<Rigidbody>();
-        rb.AddForce(Vector3.up * 50);
-            
-        _animator.SetBool("IsJumping", _isJumping);
+        if (!_isJumping)
+        {
+            _movementDirectionBeforeJump = _movementDirection;
+            _rigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            _isJumping = true;
+            _animator.SetBool("IsJumping", _isJumping);
+        }
     }
 
     void OnMenu()
     {
         // Pause the game
-        Time.timeScale = 0;
+        // Time.timeScale = 0;
         // TODO: Open the pause menu stop all components in the scene
         Cursor.lockState = CursorLockMode.None;
     }
