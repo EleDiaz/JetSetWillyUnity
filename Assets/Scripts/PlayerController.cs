@@ -50,11 +50,13 @@ public class PlayerController : MonoBehaviour
     private Vector2 _lerpMovementDirection = Vector2.zero;
     private Vector2 _movementDirection = Vector2.zero;
     private Vector2 _movementDirectionBeforeJump = Vector2.zero;
+    private Quaternion _lastHeadOrientation = Quaternion.identity;
     private Rigidbody _rigidbody;
     private PlayerInput _playerInput;
     private Animator _animator;
     private SpringArm _springArm;
     private float _lastCameraCheckTime = 0.0f;
+    private CapsuleCollider _capsuleCollider;
 
     private double TOLERANCE = 0.1;
     public int jumpForce = 300;
@@ -63,18 +65,22 @@ public class PlayerController : MonoBehaviour
     private static readonly int IsIdle = Animator.StringToHash("IsIdle");
     private static readonly int Running = Animator.StringToHash("Running");
     private static readonly int Direction = Animator.StringToHash("Direction");
-    private static readonly int HeadXAxis = Animator.StringToHash("HeadXAxis");
-    private static readonly int HeadYAxis = Animator.StringToHash("HeadYAxis");
     private static readonly int Turning = Animator.StringToHash("Turning");
     private static readonly int IsRunning = Animator.StringToHash("IsRunning");
     private static readonly int IsTurning = Animator.StringToHash("IsTurning");
 
     void Awake()
     {
+        _capsuleCollider = GetComponent<CapsuleCollider>();
         _rigidbody = GetComponent<Rigidbody>();
         _playerInput = GetComponent<PlayerInput>();
         _animator = GetComponent<Animator>();
         _springArm = GetComponent<SpringArm>();
+    }
+
+    private void Start()
+    {
+        _lastHeadOrientation = _animator.GetBoneTransform(HumanBodyBones.Head).rotation;
     }
 
     void OnEnable()
@@ -93,10 +99,6 @@ public class PlayerController : MonoBehaviour
         _playerInput.onJump -= OnJump;
         _playerInput.onMenu -= OnMenu;
         _playerInput.onSprint -= OnSprint;
-    }
-
-    void Start()
-    {
     }
 
     void Update()
@@ -133,7 +135,9 @@ public class PlayerController : MonoBehaviour
 
     bool CheckGrounded()
     {
-        return Physics.Raycast(transform.position, Vector3.down, 0.1f);
+        return Physics.CheckCapsule(_capsuleCollider.bounds.center,
+            new Vector3(_capsuleCollider.bounds.center.x, _capsuleCollider.bounds.min.y - 0.1f,
+                _capsuleCollider.bounds.center.z), _capsuleCollider.radius, ~LayerMask.GetMask("Player"));
     }
 
     /// <summary>
@@ -146,26 +150,26 @@ public class PlayerController : MonoBehaviour
         if (_isSprinting)
         {
             _rigidbody.MovePosition(transform.position + Mathf.Lerp(0, maxRunSpeed, movementDirection.magnitude) *
-                Time.deltaTime * moveDirection);
+                                    Time.deltaTime * moveDirection);
         }
         else
         {
             _rigidbody.MovePosition(transform.position + Mathf.Lerp(0, maxWalkSpeed, movementDirection.magnitude) *
-                Time.deltaTime *
-                moveDirection);
+                                    Time.deltaTime *
+                                    moveDirection);
         }
 
+        // Automatic rotation after X seconds
         if ((Math.Abs(moveDirection.magnitude) > TOLERANCE || Time.time - _lastCameraCheckTime > timeToResetCamera) &&
             (!_isJumping || !_isFalling))
         {
-            // We could also create our yaw rotation from camera quaternion.
-            //_rigidbody.MoveRotation(Quaternion.Lerp(transform.rotation.normalized, _springArm.yawRotation, rotationSpeed * Time.deltaTime));
             transform.rotation = Quaternion.Lerp(transform.rotation.normalized, _springArm.yawRotation,
                 rotationSpeed * Time.deltaTime);
 
             _animator.SetBool(IsTurning, true);
             _animator.SetFloat(Turning,
-                Mathf.Sign(_springArm.yawRotation.y) * Quaternion.Angle(transform.rotation, _springArm.yawRotation) / 180f);
+                Mathf.Sign(_springArm.yawRotation.y) * Quaternion.Angle(transform.rotation, _springArm.yawRotation) /
+                180f);
 
             if (Math.Abs(Quaternion.Angle(transform.rotation, _springArm.yawRotation)) < TOLERANCE)
             {
@@ -173,15 +177,6 @@ public class PlayerController : MonoBehaviour
                 _lastCameraCheckTime = Time.time;
             }
         }
-    }
-
-    void UpdateHeadingPosition(Quaternion newRotation)
-    {
-        // TODO: Update character rotation
-    }
-
-    void UpdateHead()
-    {
     }
 
     void UpdateAnimationMove()
@@ -238,10 +233,12 @@ public class PlayerController : MonoBehaviour
     private void OnAnimatorIK(int layerIndex)
     {
         // Head Movement to looking direction
-        var yawAdjust = _springArm.yawRotation * transform.rotation;
-        var pitchAdjust = _springArm.pitchRotation * Quaternion.AngleAxis(0, Vector3.forward);
-        var forward = _animator.GetBoneTransform(HumanBodyBones.Head).position;
-        _animator.SetLookAtPosition(forward + (yawAdjust * pitchAdjust * Vector3.forward * 10));
+        var yawAdjust = _springArm.yawRotation;
+        var pitchAdjust = _springArm.pitchRotation;
+        var headTransform = _animator.GetBoneTransform(HumanBodyBones.Neck);
+        _lastHeadOrientation = Quaternion.RotateTowards(_lastHeadOrientation, yawAdjust * pitchAdjust, rotationSpeed);
+        var target = headTransform.position + _lastHeadOrientation * (Vector3.forward * 100);
+        _animator.SetLookAtPosition(target);
         _animator.SetLookAtWeight(1.0f);
     }
 }
