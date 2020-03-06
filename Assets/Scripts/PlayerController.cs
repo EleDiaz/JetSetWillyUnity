@@ -58,6 +58,16 @@ public class PlayerController : MonoBehaviour
 
     private double TOLERANCE = 0.1;
     public int jumpForce = 300;
+    private static readonly int IsJumping = Animator.StringToHash("IsJumping");
+    private static readonly int IsFalling = Animator.StringToHash("IsFalling");
+    private static readonly int IsIdle = Animator.StringToHash("IsIdle");
+    private static readonly int Running = Animator.StringToHash("Running");
+    private static readonly int Direction = Animator.StringToHash("Direction");
+    private static readonly int HeadXAxis = Animator.StringToHash("HeadXAxis");
+    private static readonly int HeadYAxis = Animator.StringToHash("HeadYAxis");
+    private static readonly int Turning = Animator.StringToHash("Turning");
+    private static readonly int IsRunning = Animator.StringToHash("IsRunning");
+    private static readonly int IsTurning = Animator.StringToHash("IsTurning");
 
     void Awake()
     {
@@ -91,7 +101,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        _lerpMovementDirection = Vector2.Lerp(_lerpMovementDirection, _isSprinting? _movementDirection * 2: _movementDirection , acceleration * Time.deltaTime);
+        _lerpMovementDirection = Vector2.Lerp(_lerpMovementDirection,
+            _isSprinting ? _movementDirection * 2 : _movementDirection, acceleration * Time.deltaTime);
         if (!_isJumping && !_isFalling)
         {
             Move(_lerpMovementDirection);
@@ -100,6 +111,7 @@ public class PlayerController : MonoBehaviour
         {
             Move((_movementDirection * airControl + _movementDirectionBeforeJump).normalized);
         }
+
         UpdateAnimationMove();
 
         if (CheckGrounded())
@@ -107,15 +119,15 @@ public class PlayerController : MonoBehaviour
             if (_isFalling)
             {
                 _isFalling = false;
-                _animator.SetBool("IsFalling", _isFalling);
+                _animator.SetBool(IsFalling, _isFalling);
                 _isJumping = false;
-                _animator.SetBool("IsJumping", _isJumping);
+                _animator.SetBool(IsJumping, _isJumping);
             }
         }
         else
         {
             _isFalling = true;
-            _animator.SetBool("IsFalling", _isFalling);
+            _animator.SetBool(IsFalling, _isFalling);
         }
     }
 
@@ -134,22 +146,30 @@ public class PlayerController : MonoBehaviour
         if (_isSprinting)
         {
             _rigidbody.MovePosition(transform.position + Mathf.Lerp(0, maxRunSpeed, movementDirection.magnitude) *
-                                      Time.deltaTime * moveDirection);
+                Time.deltaTime * moveDirection);
         }
         else
         {
-            _rigidbody.MovePosition(transform.position + Mathf.Lerp(0, maxWalkSpeed, movementDirection.magnitude) * Time.deltaTime *
-                                      moveDirection);
+            _rigidbody.MovePosition(transform.position + Mathf.Lerp(0, maxWalkSpeed, movementDirection.magnitude) *
+                Time.deltaTime *
+                moveDirection);
         }
 
-        if (Math.Abs(moveDirection.magnitude) > TOLERANCE || Time.time - _lastCameraCheckTime > timeToResetCamera)
+        if ((Math.Abs(moveDirection.magnitude) > TOLERANCE || Time.time - _lastCameraCheckTime > timeToResetCamera) &&
+            (!_isJumping || !_isFalling))
         {
             // We could also create our yaw rotation from camera quaternion.
             //_rigidbody.MoveRotation(Quaternion.Lerp(transform.rotation.normalized, _springArm.yawRotation, rotationSpeed * Time.deltaTime));
-            transform.rotation = Quaternion.Lerp(transform.rotation.normalized, _springArm.yawRotation, rotationSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.Lerp(transform.rotation.normalized, _springArm.yawRotation,
+                rotationSpeed * Time.deltaTime);
+
+            _animator.SetBool(IsTurning, true);
+            _animator.SetFloat(Turning,
+                Mathf.Sign(_springArm.yawRotation.y) * Quaternion.Angle(transform.rotation, _springArm.yawRotation) / 180f);
 
             if (Math.Abs(Quaternion.Angle(transform.rotation, _springArm.yawRotation)) < TOLERANCE)
             {
+                _animator.SetBool(IsTurning, false);
                 _lastCameraCheckTime = Time.time;
             }
         }
@@ -168,13 +188,15 @@ public class PlayerController : MonoBehaviour
     {
         if (Math.Abs(_lerpMovementDirection.magnitude) < TOLERANCE)
         {
-            _animator.SetBool("IsIdle", true);
+            _animator.SetBool(IsIdle, true);
+            _animator.SetBool(IsRunning, false);
         }
         else
         {
-            _animator.SetFloat("Running", _lerpMovementDirection.y);
-            _animator.SetFloat("Direction", _lerpMovementDirection.x);
-            _animator.SetBool("IsIdle", false);
+            _animator.SetBool(IsRunning, true);
+            _animator.SetFloat(Running, _lerpMovementDirection.y);
+            _animator.SetFloat(Direction, _lerpMovementDirection.x);
+            _animator.SetBool(IsIdle, false);
         }
     }
 
@@ -201,7 +223,7 @@ public class PlayerController : MonoBehaviour
             _movementDirectionBeforeJump = _movementDirection;
             _rigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             _isJumping = true;
-            _animator.SetBool("IsJumping", _isJumping);
+            _animator.SetBool(IsJumping, _isJumping);
         }
     }
 
@@ -211,5 +233,15 @@ public class PlayerController : MonoBehaviour
         // Time.timeScale = 0;
         // TODO: Open the pause menu stop all components in the scene
         Cursor.lockState = CursorLockMode.None;
+    }
+
+    private void OnAnimatorIK(int layerIndex)
+    {
+        // Head Movement to looking direction
+        var yawAdjust = _springArm.yawRotation * transform.rotation;
+        var pitchAdjust = _springArm.pitchRotation * Quaternion.AngleAxis(0, Vector3.forward);
+        var forward = _animator.GetBoneTransform(HumanBodyBones.Head).position;
+        _animator.SetLookAtPosition(forward + (yawAdjust * pitchAdjust * Vector3.forward * 10));
+        _animator.SetLookAtWeight(1.0f);
     }
 }

@@ -96,6 +96,7 @@ LightmapSettings:
     m_PVRFilteringAtrousPositionSigmaAO: 1
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
+    m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
   m_UseShadowmask: 1
 --- !u!196 &4
@@ -279,6 +280,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -372,6 +374,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -415,33 +418,37 @@ PrefabInstance:
       propertyPath: m_Name
       value: Michelle
       objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.3387
+      objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -0.014823299
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.00021798909
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -0.002147466
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0.0013878368
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: 0.008634056
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: -0.008703514
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.9999239
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
       propertyPath: m_RootOrder
@@ -449,14 +456,82 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
+      value: 0.16800001
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: 0.98800004
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: -0.99600005
+      objectReference: {fileID: 0}
+    - target: {fileID: 400004, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.93707883
+      objectReference: {fileID: 0}
+    - target: {fileID: 400004, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.0069434876
+      objectReference: {fileID: 0}
+    - target: {fileID: 400004, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.3471264
+      objectReference: {fileID: 0}
+    - target: {fileID: 400004, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.03658381
+      objectReference: {fileID: 0}
+    - target: {fileID: 400004, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -6.072152e-10
+      objectReference: {fileID: 0}
+    - target: {fileID: 400004, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.059988987
+      objectReference: {fileID: 0}
+    - target: {fileID: 400004, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.011589567
+      objectReference: {fileID: 0}
+    - target: {fileID: 400004, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -40.546
+      objectReference: {fileID: 0}
+    - target: {fileID: 400004, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 5.5420003
+      objectReference: {fileID: 0}
+    - target: {fileID: 400004, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -2.8980002
+      objectReference: {fileID: 0}
+    - target: {fileID: 400006, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 6.938894e-18
+      objectReference: {fileID: 0}
+    - target: {fileID: 400006, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400006, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400006, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 400006, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400006, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.2174881
+      objectReference: {fileID: 0}
+    - target: {fileID: 400006, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9500000, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
@@ -465,11 +540,18 @@ PrefabInstance:
       objectReference: {fileID: 9100000, guid: 21a7262add2d7d644ae77c24eed48d7f, type: 2}
     - target: {fileID: 9500000, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
       propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9500000, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_UpdateMode
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 400000, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.3387
+    - target: {fileID: 9500000, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
+      propertyPath: m_WarningMessage
+      value: "\nBinding warning: Some generic clip(s) animate transforms that are
+        already bound by a Humanoid avatar. These transforms can only be changed
+        by Humanoid clips.\n\tTransform 'mixamorig:Head'\n\tTransform 'mixamorig:Head'\n\tFrom
+        animation clip 'Head TurnUp'"
       objectReference: {fileID: 0}
     - target: {fileID: 13700000, guid: 8369353c46319054792a25a7c8e4ff10, type: 3}
       propertyPath: m_AABB.m_Center.y
@@ -546,6 +628,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -624,6 +707,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -695,8 +779,9 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
   m_Enabled: 1
-  serializedVersion: 9
+  serializedVersion: 10
   m_Type: 1
+  m_Shape: 0
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
   m_Intensity: 1
   m_Range: 10
@@ -928,6 +1013,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1035,6 +1121,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1185,7 +1272,7 @@ MonoBehaviour:
   airControl: 0
   timeToResetCamera: 4
   playerCamera: {fileID: 963194227}
-  jumpForce: 500
+  jumpForce: 300
 --- !u!114 &1917584404
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1337,6 +1424,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
